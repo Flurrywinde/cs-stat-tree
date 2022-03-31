@@ -27,11 +27,11 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
 
 # Dependencies (besides cstree and ctree): flask, prompt_toolkit, networkx, pygraphviz, asteval, rich, flask_cors
 
-load_dotenv()
+load_dotenv()  # https://stackoverflow.com/questions/51228227/standard-practice-for-wsgi-secret-key-for-flask-applications-on-github-reposito
 app = Flask(__name__, static_url_path="", static_folder="static")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1000	# 1 meg. Raises RequestEntityTooLarge exception.
-# Set the secret key to some random bytes. Keep this really secret! See: https://stackoverflow.com/questions/51436382/runtimeerror-the-session-is-unavailable-because-no-secret-key-was-set-set-the
+# Set the secret key to some random bytes. Keep this really secret! See: https://stackoverflow.com/questions/51436382/runtimeerror-the-session-is-unavailable-because-no-secret-key-was-set-set-the and https://stackoverflow.com/questions/34902378/where-do-i-get-a-secret-key-for-flask
 app.secret_key = os.getenv('SECRET_KEY', 'for dev')
 #CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -39,7 +39,7 @@ tree = CStree()
 
 def uploadgist(dotcode):
 	GITHUB_API="https://api.github.com"
-	#API_TOKEN='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'
+	#API_TOKEN='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'  # generate this here: https://github.com/settings/tokens/new (From: https://stackoverflow.com/questions/65518288/python-how-to-edit-update-a-github-gist (info on request.patch()))
 	API_TOKEN=os.getenv('GITHUB_GIST_API_TOKEN', 'for dev') 
 
 	#form a request URL
