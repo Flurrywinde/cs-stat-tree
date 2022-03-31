@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 from flask import Flask, redirect, url_for, request, render_template, flash
 #from flask_cors import CORS
@@ -65,7 +66,7 @@ def uploadgist(dotcode):
 	try:
 		return(j['files'][f'{gist_filename}']['raw_url'])
 	except KeyError:
-		print(j)
+		print(j, file=sys.stderr)
 		raise
 
 @app.route('/final/<file>')
@@ -150,8 +151,8 @@ def login():
 		dotcode = request.args.get('dotcode')
 	return redirect(url_for('success',dotcode = dotcode))
 
-@app.errorhandler(Exception)          
-def basic_error(e):          
+@app.errorhandler(Exception)
+def basic_error(e):
     return "an error occured: " + str(e)
 
 if __name__ == '__main__':
