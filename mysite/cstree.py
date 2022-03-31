@@ -1221,9 +1221,10 @@ class CStree():
 				node.otherparents = nodelist
 		#debug
 		#for node in self.nodes.values():
-		#	if node.otherparents:
+		#	if node.parent is None:
+		#	#if node.otherparents:
 		#		inspect(node)
-		#prompt()
+		#		prompt()
 
 		# Add multi-parent count to label
 		for k, node in self.nodes.items():

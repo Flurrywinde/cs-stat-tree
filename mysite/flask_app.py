@@ -146,5 +146,9 @@ def login():
 		dotcode = request.args.get('dotcode')
 	return redirect(url_for('success',dotcode = dotcode))
 
+@app.errorhandler(Exception)          
+def basic_error(e):          
+    return "an error occured: " + str(e)
+
 if __name__ == '__main__':
 	app.run(debug = True)
