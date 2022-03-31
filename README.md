@@ -2,6 +2,8 @@
 
 This is a frontend to a choicescript choice-tree analysis tool I'm working on. It lets you upload a scene file and produces a graphviz tree showing all possible values of the game's stats at different parts of the story. See it online [here](https://flurrywinde.pythonanywhere.com).
 
+Warning: while simple scene files will already work, many aspects of choicescript still aren't supported, and the project is currently in a buggy, pre-alpha stage. See below for the TO-DO list.
+
 ## Motivation
 
 Tracking all the possible values of a game’s stats is the hardest part of writing a game for me, so for a long time, I've been looking for a tool that would make a graphical tree representation of a scene.
@@ -32,7 +34,7 @@ Nodes with a thick red border indicate parts of the story where one or more stat
 
 <img alt="cstree" src="docs/images/cstree-stats.png">
 
-In this simple example, leadership and strength are what can be different at this point in the story. The green numbers are the line numbers of the path taken to get there.
+In this simple example, leadership and strength are what can be different at this point in the story. The preceding numbers are the line numbers of the path taken to get there.
 
 ## Still Not Supported
 
