@@ -12,7 +12,7 @@ Then I found [Rich](https://github.com/Textualize/rich) which can make trees.
 
 I combined these two things, and this was the result:
 
-<img alt="cstree" src="docs/images/cstree-rich.png">
+<img alt="cstree" src="docs/images/cstree-rich.jpg">
 
 The code for this isn't on github yet as it's still in proof-of-concept phase and very messy, but with it, you can already open and close nodes, traverse the tree using the arrow keys, etc.
 
