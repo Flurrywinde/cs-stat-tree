@@ -12,7 +12,7 @@ Then I found [Rich](https://github.com/Textualize/rich) which can make trees.
 
 I combined these two things, and this was the result:
 
-<img alt="cstree" src="doc/img/cstree-rich.png">
+<img alt="cstree" src="docs/images/cstree-rich.png">
 
 The code for this isn't on github yet as it's still in proof-of-concept phase and very messy, but with it, you can already open and close nodes, traverse the tree using the arrow keys, etc.
 
@@ -24,13 +24,13 @@ The [webpage hosted on pythonanywhere.com](https://flurrywinde.pythonanywhere.co
 
 Nodes considered irrelevant to stat analysis will be condensed like so:
 
-<img alt="cstree" src="doc/img/cstree-condensed.png">
+<img alt="cstree" src="docs/images/cstree-condensed.png">
 
 This is just the choicescript example game (slightly modified). The block with the … in it contains a number of choicescript lines of code, which can be viewed by hovering over it as shown above.
 
 Nodes with a thick red border indicate parts of the story where one or more stats could have several different values. Hover over those to see them:
 
-<img alt="cstree" src="doc/img/cstree-stats.png">
+<img alt="cstree" src="docs/images/cstree-stats.png">
 
 In this simple example, leadership and strength are what can be different at this point in the story. The green numbers are the line numbers of the path taken to get there.
 
