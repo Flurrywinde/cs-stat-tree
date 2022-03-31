@@ -62,7 +62,11 @@ def uploadgist(dotcode):
 	#for gist in j:
 	#	print(f'{gist}: {j[gist]}')
 
-	return(j['files'][f'{gist_filename}']['raw_url'])
+	try:
+		return(j['files'][f'{gist_filename}']['raw_url'])
+	except KeyError:
+		print(j)
+		raise
 
 @app.route('/final/<file>')
 def final(file):
