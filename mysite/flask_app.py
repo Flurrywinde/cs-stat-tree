@@ -6,6 +6,22 @@ from werkzeug.utils import secure_filename
 from cstree import CStree
 import requests
 import json
+#from flask_cors import CORS, cross_origin
+
+# for cors experiments. From: https://www.pythonanywhere.com/forums/topic/28687/
+# looks like add @cross_origin() below the @app.route thing, but which one in my case?
+#@app.route('/form2', methods=['POST'])
+#@cross_origin()
+# below CORS() call didn't work
+# BETTER (send_from_directory): https://www.pythonanywhere.com/forums/topic/3113/ (no cors)
+
+#@app.route("/uploads/<path:name>")
+#def download_file(name):
+#    return send_from_directory(
+#        app.config['UPLOAD_FOLDER'], name, as_attachment=True
+#    )
+
+# [s]Another way (static files): https://flask.palletsprojects.com/en/2.1.x/quickstart/#static-files Doesn't seem to work
 
 UPLOAD_FOLDER = '/home/Flurrywinde/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
@@ -23,7 +39,8 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
 
 # Dependencies (besides cstree and ctree): flask, prompt_toolkit, networkx, pygraphviz, asteval, rich, flask_cors
 
-app = Flask(__name__, static_url_path="", static_folder="static")
+#app = Flask(__name__, static_url_path="", static_folder="static")
+app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1000	# 1 meg. Raises RequestEntityTooLarge exception.
 # Set the secret key to some random bytes. Keep this really secret! See: https://stackoverflow.com/questions/51436382/runtimeerror-the-session-is-unavailable-because-no-secret-key-was-set-set-the
@@ -64,14 +81,14 @@ def uploadgist(dotcode):
 
 	return(j['files'][f'{gist_filename}']['raw_url'])
 
-@app.route('/final/<file>')
-def final(file):
-	#return redirect(url_for('static', filename=file))
-	return send_file(url_for('static', filename=file), mimetype='text/html', as_attachment=False, add_etags=False)
-
+# failed experiment
+#@app.route('/final/<file>')
+#def final(file):
+#	#return redirect(url_for('static', filename=file))  # downloads instead of showing, maybe due to .dot extension?
+#	return send_file(url_for('static', filename=file), mimetype='text/html', as_attachment=False, add_etags=False)
 
 @app.route('/result/<csfile>')
-def download_file(csfile):
+def cs2dot(csfile):
 	#flash(f'{csfile}')
 	dotfile = csfile + '.dot'
 	#if os.path.isfile(f"{UPLOAD_FOLDER}/{dotfile}") and os.path.getsize(f"{UPLOAD_FOLDER}/{dotfile}") > 0:
@@ -98,11 +115,11 @@ def upload_file():
 			#flash('No selected file')
 			#return redirect(request.url)
 			filename = "mygame-orig.txt"
-			return redirect(url_for('download_file', csfile=filename))
+			return redirect(url_for('cs2dot', csfile=filename))
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			return redirect(url_for('download_file', csfile=filename))
+			return redirect(url_for('cs2dot', csfile=filename))
 	return redirect('https://flurrywinde.pythonanywhere.com/upload.html')
 	#return '''
 	#<!doctype html>
@@ -124,9 +141,10 @@ def success(dotcode):
 	tree.hideall()
 	dotcode = tree.makedot()
 	#tempfile.mkstemp(suffix=None, prefix=None, dir=None, text=False)
-	#handle, filename = tempfile.mkstemp(dir='/home/Flurrywinde/mysite/output')
-	#tree.cs2dot(filename)
-	#newdot = os.path.basename(filename)
+	handle, filename = tempfile.mkstemp(dir='/home/Flurrywinde/static')
+	tree.cs2dot(filename)
+	newdot = os.path.basename(filename)
+	# url_for('static', filename=newdot)
 
 	# creating gist and getting url, script and clone link
 	gisturl = uploadgist(dotcode)
