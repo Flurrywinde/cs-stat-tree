@@ -3,7 +3,7 @@ import sys
 import tempfile
 from rich import inspect
 from rich.console import Console
-from flask import Flask, redirect, url_for, request, render_template, flash
+from flask import Flask, redirect, url_for, request, render_template, flash, send_file
 #from flask_cors import CORS
 from flask import json
 from werkzeug.utils import secure_filename
@@ -13,26 +13,20 @@ import requests
 import json
 from dotenv import load_dotenv
 
-UPLOAD_FOLDER = '/home/Flurrywinde/uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
+# Use venv. (Highest version on pythonanywhere is python3.9, so using this locally too.) On pythonanywhere, in shell, do `workon myvirtualenv`. Locally, `. venv/bin/activate.fish`. Install all needed modules. (See Dependencies list below.) To run flask locally: `python flask_app.py`, then in browser: `http://localhost:5000' or `http://127.0.0.1:5000/`
 
-# The jinja2 template engine uses the following delimiters for escaping from HTML.
-
-#	 {% ... %} for Statements
-#	 {{ ... }} for Expressions to print to the template output
-#	 {# ... #} for Comments not included in the template output
-#	 # ... ## for Line Statements
-
-# Run this to set up test web server at http://localhost:5000
-
-# Then in browser, goto choice.html to send data to it
-
-# Dependencies (besides cstree and ctree): flask, prompt_toolkit, networkx, pygraphviz, asteval, rich, flask_cors
+# Dependencies (besides cstree and ctree): flask, prompt_toolkit, networkx, pygraphviz, asteval, rich, flask_cors, requests, python-dotenv
 
 consolef = Console(stderr=True)
-sys.setrecursionlimit(10000)
+#sys.setrecursionlimit(10000)
 load_dotenv()  # https://stackoverflow.com/questions/51228227/standard-practice-for-wsgi-secret-key-for-flask-applications-on-github-reposito
 app = Flask(__name__, static_url_path="", static_folder="static")
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(app.root_path), 'uploads')  # maybe shouldn't just dirname these...
+CSGV_FOLDER = os.path.join(os.path.dirname(app.root_path), 'choicescript-graphviz')
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
+
+# TODO: proper way to config: https://stackoverflow.com/questions/17077863/how-to-see-if-a-flask-app-is-being-run-on-localhost
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1000	# 1 meg. Raises RequestEntityTooLarge exception.
 # Set the secret key to some random bytes. Keep this really secret! See: https://stackoverflow.com/questions/51436382/runtimeerror-the-session-is-unavailable-because-no-secret-key-was-set-set-the and https://stackoverflow.com/questions/34902378/where-do-i-get-a-secret-key-for-flask
@@ -40,6 +34,18 @@ app.secret_key = os.getenv('SECRET_KEY', 'for dev')
 #CORS(app, resources={r"/*": {"origins": "*"}})
 
 tree = CStree()
+
+def is_production():
+    """ Determines if app is running on the production server or not.
+    Get Current URI.
+    Extract root location.
+    Compare root location against developer server value 127.0.0.1:5000.
+    :return: (bool) True if code is running on the production server, and False otherwise.
+    """
+    root_url = request.url_root
+    developer_url = 'http://127.0.0.1:5000/'
+    developer_url2 = 'http://localhost:5000/'
+    return root_url != developer_url and root_url != developer_url2
 
 def uploadgist(dotcode):
 	GITHUB_API="https://api.github.com"
@@ -82,6 +88,10 @@ def uploadgist(dotcode):
 			print('uploadgist(): ', j, file=sys.stderr)
 			raise
 
+@app.route('/')
+def homepage():
+	return render_template('upload.html')
+
 @app.route('/final/<file>')
 def final(file):
 	#return redirect(url_for('static', filename=file))
@@ -94,7 +104,11 @@ def download_file(csfile):
 	dotfile = csfile + '.dot'
 	#if os.path.isfile(f"{UPLOAD_FOLDER}/{dotfile}") and os.path.getsize(f"{UPLOAD_FOLDER}/{dotfile}") > 0:
 	#	return redirect(f"http://dreampuf.github.io/GraphvizOnline/?url=https://flurrywinde.pythonanywhere.com/uploads/{csfile}")
-	os.system(f'java -cp /home/Flurrywinde/choicescript-graphviz/ Main "{UPLOAD_FOLDER}/{csfile}" > "{UPLOAD_FOLDER}/{dotfile}"')
+	# TODO: get java output for debugging
+	status = os.system(f'java -cp {CSGV_FOLDER} Main "{UPLOAD_FOLDER}/{csfile}" > "{UPLOAD_FOLDER}/{dotfile}"')
+	if status != 0:
+		print(f'choicescript-graphviz returned {status}', file=sys.stderr)
+		raise Exception("Couldn't parse scene file")
 	return success(f"{UPLOAD_FOLDER}/{dotfile}")
 
 def allowed_file(filename):
@@ -102,6 +116,7 @@ def allowed_file(filename):
 		   filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # From: https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
+# TODO: add stuff (e.g. security) from: https://blog.miguelgrinberg.com/post/handling-file-uploads-with-flask
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
 	if request.method == 'POST':
@@ -119,9 +134,14 @@ def upload_file():
 			return redirect(url_for('download_file', csfile=filename))
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			try:
+				file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			except FileNotFoundError:
+				print(f'on server: {request.url_root}. Upload of {filename} failed.')
+				raise
 			return redirect(url_for('download_file', csfile=filename))
-	return redirect('https://flurrywinde.pythonanywhere.com/upload.html')
+	#return redirect('https://flurrywinde.pythonanywhere.com/upload.html')
+	return render_template('upload.html')
 	#return '''
 	#<!doctype html>
 	#<title>Upload new File</title>
@@ -142,7 +162,7 @@ def success(dotcode):
 	tree.hideall()
 	dotcode = tree.makedot()
 	#tempfile.mkstemp(suffix=None, prefix=None, dir=None, text=False)
-	#handle, filename = tempfile.mkstemp(dir='/home/Flurrywinde/mysite/output')
+	#handle, filename = tempfile.mkstemp(dir='/home/  Flurrywinde  /mysite/output')
 	#tree.cs2dot(filename)
 	#newdot = os.path.basename(filename)
 
@@ -154,6 +174,7 @@ def success(dotcode):
 	else:
 		return render_template('choice_template.html', dotcode = dotcode)
 
+# For old, unused method of submitting scene file via textarea. (templates/choice.html)
 @app.route('/choice',methods = ['POST', 'GET'])
 def login():
 	if request.method == 'POST':
@@ -168,7 +189,7 @@ def login():
 @app.errorhandler(Exception)
 def basic_error(e):
 	if isinstance(e, HTTPException):
-		httppassthru = False  # how handle http exceptions?
+		httppassthru = False  # how handle http exceptions? Not passthru.
 		if httppassthru:
 			# pass through HTTP errors
 			return e
@@ -193,7 +214,15 @@ def basic_error(e):
 		print("User with IP %s tried to access endpoint: %s" % (user_ip , requested_path), file=sys.stderr)
 		print(e, file=sys.stderr)
 		inspect(e, console=consolef)
-		return "An error occurred: " + str(e)
+		possible_causes = '\n<br>\n<br>Possible causes:\n<br>\n<br>'
+		# TODO: not on-the-fly html
+		if str(e) == 'maximum recursion depth exceeded':
+			possible_causes += '\t* Infinite loop in your scene'
+		elif isinstance(e, FileNotFoundError):
+			possible_causes = '\n<br>\n<br>* File upload failure'
+		else:
+			possible_causes = ''
+		return "An error occurred: " + str(e) + possible_causes
 
 if __name__ == '__main__':
 	app.run(debug = True)
