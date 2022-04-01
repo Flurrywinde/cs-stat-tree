@@ -1541,8 +1541,13 @@ class CStree():
 		def traverse(node, curpath, curvars):
 			# merge vars2 (vars coming in from previous nodes) into vars1 (vars node already has)
 			print(f'allvars: traversing node {node.id}', file=sys.stderr)
-			if node.id == '33':
+			c=0
+			if node.id == '33' or node.id == '75':
+				# 33 34 35 75
 				inspect(node, console=consolef)
+				if c > 3:
+					sys.exit(1)
+				c += 1
 			def merge(vars1, vars2):
 				vars2 = copy.deepcopy(vars2)  # got: for path1, val1 in paths1.items(): RuntimeError: dictionary changed size during iteration , so tried this, but didn't fix, so maybe don't need, but leave just in case, because lazy
 				for var2, paths2 in vars2.items():
