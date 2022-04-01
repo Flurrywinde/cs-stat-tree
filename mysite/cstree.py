@@ -1202,7 +1202,7 @@ class CStree():
 
 		# convert otherparents from startln to CSnode
 		for node in self.nodes.values():
-			print(f'make_csnodes: on {node.startln} (id: {node.id}) - {node.otherparents}')
+			consolef.print(f'make_csnodes: on {node.startln} (id: {node.id}) - {node.otherparents}')
 			if node.otherparents:
 				nodelist = []
 				try:
