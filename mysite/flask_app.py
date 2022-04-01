@@ -188,6 +188,9 @@ def basic_error(e):
 	 
 		print("User with IP %s tried to access endpoint: %s" % (user_ip , requested_path), file=sys.stderr)
 		print(e, file=sys.stderr)
+		print(e.code, file=sys.stderr)
+		print(e.name, file=sys.stderr)
+		print(e.description, file=sys.stderr)
 		return "An error occurred: " + str(e)
 
 if __name__ == '__main__':
