@@ -27,6 +27,7 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
 
 # Dependencies (besides cstree and ctree): flask, prompt_toolkit, networkx, pygraphviz, asteval, rich, flask_cors
 
+sys.setrecursionlimit(10000)
 load_dotenv()  # https://stackoverflow.com/questions/51228227/standard-practice-for-wsgi-secret-key-for-flask-applications-on-github-reposito
 app = Flask(__name__, static_url_path="", static_folder="static")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -188,9 +189,7 @@ def basic_error(e):
 	 
 		print("User with IP %s tried to access endpoint: %s" % (user_ip , requested_path), file=sys.stderr)
 		print(e, file=sys.stderr)
-		print(e.code, file=sys.stderr)
-		print(e.name, file=sys.stderr)
-		print(e.description, file=sys.stderr)
+		inspect(e, console=consolef)
 		return "An error occurred: " + str(e)
 
 if __name__ == '__main__':
