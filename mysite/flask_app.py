@@ -1,6 +1,7 @@
 import os
 import sys
 import tempfile
+from rich import inspect
 from flask import Flask, redirect, url_for, request, render_template, flash
 #from flask_cors import CORS
 from flask import json

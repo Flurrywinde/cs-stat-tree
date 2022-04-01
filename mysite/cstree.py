@@ -1540,6 +1540,7 @@ class CStree():
 		# make var table, vars first, yellow on grey, line between vars, only print var name once
 		def traverse(node, curpath, curvars):
 			# merge vars2 (vars coming in from previous nodes) into vars1 (vars node already has)
+			print(f'allvars: traversing node {node.id}', file=sys.stderr)
 			def merge(vars1, vars2):
 				vars2 = copy.deepcopy(vars2)  # got: for path1, val1 in paths1.items(): RuntimeError: dictionary changed size during iteration , so tried this, but didn't fix, so maybe don't need, but leave just in case, because lazy
 				for var2, paths2 in vars2.items():
