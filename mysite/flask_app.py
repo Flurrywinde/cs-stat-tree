@@ -2,6 +2,7 @@ import os
 import sys
 import tempfile
 from rich import inspect
+from rich.console import Console
 from flask import Flask, redirect, url_for, request, render_template, flash
 #from flask_cors import CORS
 from flask import json
@@ -28,6 +29,7 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'dot', 'gv'}
 
 # Dependencies (besides cstree and ctree): flask, prompt_toolkit, networkx, pygraphviz, asteval, rich, flask_cors
 
+consolef = Console(stderr=True)
 sys.setrecursionlimit(10000)
 load_dotenv()  # https://stackoverflow.com/questions/51228227/standard-practice-for-wsgi-secret-key-for-flask-applications-on-github-reposito
 app = Flask(__name__, static_url_path="", static_folder="static")
